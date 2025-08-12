@@ -28,12 +28,13 @@ struct UltrasonicSensor {
     float max_distance;
     unsigned long last_reading_time;
     bool initialized;
+    bool triggered;
 };
 
 // Define 8 ultrasonic sensors
 UltrasonicSensor sensors[NUM_SENSORS] = {
-    { 21, 22, 1, { 0 }, 0, 0, 0, 0, false }, // Sensor 1: Trigger=2, Echo=3
-    { 23, 19, 2, { 0 }, 0, 0, 0, 0, false } // Sensor 2: Trigger=4, Echo=5
+    { 21, 22, 1, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 1: Trigger=2, Echo=3
+    { 23, 19, 2, { 0 }, 0, 0, 0, 0, false, false } // Sensor 2: Trigger=4, Echo=5
 };
 
 // // Define 8 ultrasonic sensors
@@ -153,6 +154,7 @@ void setupSensors()
         sensors[i].max_distance = 0.0;
         sensors[i].last_reading_time = 0;
         sensors[i].initialized = false;
+        sensors[i].triggered = false;
 
         Serial.print("Sensor ");
         Serial.print(sensors[i].sensor_id);
@@ -244,22 +246,38 @@ void checkForTriggers()
         uint8_t current_index = (sensor->reading_index + READINGS_BUFFER_SIZE - 1) % READINGS_BUFFER_SIZE;
         float current_distance = sensor->readings[current_index];
 
-        // Calculate threshold (50% of max distance)
+        // Calculate thresholds
         float trigger_threshold = sensor->max_distance * 0.5;
+        float reset_threshold = sensor->max_distance * 0.8; // Reset when back to 80% of max
 
-        // Only trigger when distance drops below 50% of max AND is decreasing
-        if (current_distance < trigger_threshold && current_distance < sensor->average_distance) {
-            Serial.print("TRIGGER! Sensor ");
-            Serial.print(sensor->sensor_id);
-            Serial.print(" - Distance: ");
-            Serial.print(current_distance);
-            Serial.print(" cm, Max: ");
-            Serial.print(sensor->max_distance);
-            Serial.print(" cm, Threshold: ");
-            Serial.print(trigger_threshold);
-            Serial.println(" cm");
+        if (!sensor->triggered) {
+            // Only trigger when distance drops below 50% of max AND is decreasing
+            if (current_distance < trigger_threshold && current_distance < sensor->average_distance) {
+                sensor->triggered = true;
+                Serial.print("TRIGGER! Sensor ");
+                Serial.print(sensor->sensor_id);
+                Serial.print(" - Distance: ");
+                Serial.print(current_distance);
+                Serial.print(" cm, Max: ");
+                Serial.print(sensor->max_distance);
+                Serial.print(" cm, Threshold: ");
+                Serial.print(trigger_threshold);
+                Serial.println(" cm");
 
-            sendTriggerMessage(sensor->sensor_id);
+                sendTriggerMessage(sensor->sensor_id);
+            }
+        } else {
+            // Reset trigger state when distance returns close to max
+            if (current_distance > reset_threshold) {
+                sensor->triggered = false;
+                Serial.print("RESET! Sensor ");
+                Serial.print(sensor->sensor_id);
+                Serial.print(" - Distance back to: ");
+                Serial.print(current_distance);
+                Serial.print(" cm (Reset threshold: ");
+                Serial.print(reset_threshold);
+                Serial.println(" cm)");
+            }
         }
     }
 }
