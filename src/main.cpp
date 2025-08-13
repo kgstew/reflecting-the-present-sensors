@@ -4,8 +4,8 @@
 #include <WiFi.h>
 
 // WiFi credentials (connect to the pattern controller's AP)
-const char* ssid = "ReflectingThePresent";
-const char* password = "lightshow2024";
+const char* ssid = "StreetLighting";
+const char* password = "lightitup";
 const char* websocket_server = "192.168.4.1";
 const int websocket_port = 81;
 
@@ -217,7 +217,7 @@ void updateSensorReadings()
 
             // Mark as initialized after first full buffer
             if (!sensor->initialized) {
-                static uint8_t readings_count[NUM_SENSORS] = {0};
+                static uint8_t readings_count[NUM_SENSORS] = { 0 };
                 readings_count[i]++;
                 if (readings_count[i] >= READINGS_BUFFER_SIZE) {
                     sensor->initialized = true;
