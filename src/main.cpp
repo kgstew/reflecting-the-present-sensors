@@ -13,7 +13,7 @@ const int websocket_port = 81;
 WebSocketsClient webSocket;
 
 // Ultrasonic sensor configuration
-#define NUM_SENSORS 2
+#define NUM_SENSORS 4
 #define READINGS_BUFFER_SIZE 5
 #define TRIGGER_THRESHOLD_PERCENT 50
 
@@ -31,22 +31,24 @@ struct UltrasonicSensor {
     bool triggered;
 };
 
-// Define 8 ultrasonic sensors
+// ========================================
+// BOARD CONFIGURATION - COMMENT/UNCOMMENT ONE SECTION
+// ========================================
+
+// BOARD 1 - Sensors 1-4 (UNCOMMENT THIS SECTION FOR BOARD 1)
 UltrasonicSensor sensors[NUM_SENSORS] = {
-    { 21, 22, 1, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 1: Trigger=2, Echo=3
-    { 23, 19, 2, { 0 }, 0, 0, 0, 0, false, false } // Sensor 2: Trigger=4, Echo=5
+    { 21, 22, 1, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 1: Trigger=21, Echo=22
+    { 23, 19, 2, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 2: Trigger=23, Echo=19
+    { 18, 5, 3, { 0 }, 0, 0, 0, 0, false, false },  // Sensor 3: Trigger=18, Echo=5
+    { 17, 16, 4, { 0 }, 0, 0, 0, 0, false, false }  // Sensor 4: Trigger=17, Echo=16
 };
 
-// // Define 8 ultrasonic sensors
+// BOARD 2 - Sensors 5-8 (COMMENT OUT BOARD 1 AND UNCOMMENT THIS SECTION FOR BOARD 2)
 // UltrasonicSensor sensors[NUM_SENSORS] = {
-//     { 21, 22, 1, { 0 }, 0, 0, 0, false }, // Sensor 1: Trigger=2, Echo=3
-//     { 23, 19, 2, { 0 }, 0, 0, 0, false }, // Sensor 2: Trigger=4, Echo=5
-//     { 6, 7, 3, { 0 }, 0, 0, 0, false }, // Sensor 3: Trigger=6, Echo=7
-//     { 8, 9, 4, { 0 }, 0, 0, 0, false }, // Sensor 4: Trigger=8, Echo=9
-//     { 10, 11, 5, { 0 }, 0, 0, 0, false }, // Sensor 5: Trigger=10, Echo=11
-//     { 12, 13, 6, { 0 }, 0, 0, 0, false }, // Sensor 6: Trigger=12, Echo=13
-//     { 14, 15, 7, { 0 }, 0, 0, 0, false }, // Sensor 7: Trigger=14, Echo=15
-//     { 16, 17, 8, { 0 }, 0, 0, 0, false } // Sensor 8: Trigger=16, Echo=17
+//     { 21, 22, 5, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 5: Trigger=21, Echo=22
+//     { 23, 19, 6, { 0 }, 0, 0, 0, 0, false, false }, // Sensor 6: Trigger=23, Echo=19
+//     { 18, 5, 7, { 0 }, 0, 0, 0, 0, false, false },  // Sensor 7: Trigger=18, Echo=5
+//     { 17, 16, 8, { 0 }, 0, 0, 0, 0, false, false }  // Sensor 8: Trigger=17, Echo=16
 // };
 
 // Function declarations
@@ -65,6 +67,15 @@ void setup()
     delay(1000);
 
     Serial.println("=== Reflecting The Present - Sensor Controller ===");
+    
+    // Display active board configuration
+    Serial.print("Active Board Configuration: ");
+    if (sensors[0].sensor_id <= 4) {
+        Serial.println("BOARD 1 (Sensors 1-4)");
+    } else {
+        Serial.println("BOARD 2 (Sensors 5-8)");
+    }
+    Serial.println();
 
     // Setup ultrasonic sensors
     setupSensors();
